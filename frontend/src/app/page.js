@@ -1,95 +1,80 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
+import { useEffect, useState } from 'react';
+import { Chart } from 'chart.js';
 
 export default function Home() {
+
+  const [salesData, setSalesData] = useState(null);
+
+  useEffect(() => {
+    console.log("ehhlo");
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/forecast?categories=M01AB,M01AE,N02BA&frequency=monthly');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Fetched data:', data);
+        setSalesData(data);
+      } catch (error) {
+        console.error('Fetching error:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
+  useEffect(() => {
+
+    if (salesData) {
+      // Assuming 'historical' and 'forecast' data are arrays of the same length
+      Object.keys(salesData.historical).forEach((category) => {
+        const ctx = document.getElementById(`chart-${category}`).getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: Array.from({ length: salesData.historical[category].length }).map((_, i) => i),
+            datasets: [
+              {
+                label: `Historical Sales for ${category}`,
+                data: salesData.historical[category],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1,
+                fill: false,
+              },
+              {
+                label: `Forecasted Sales for ${category}`,
+                data: salesData.forecast[category],
+                borderColor: 'rgb(153, 102, 255)',
+                borderDash: [5, 5],
+                tension: 0.1,
+                fill: false,
+              }
+            ],
+          },
+          options: {
+            animation: {
+              duration: 2000,
+              easing: 'easeInOutQuart',
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+              }
+            }
+          },
+        });
+      });
+    }
+  }, [salesData]);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    <div>
+      {salesData && Object.keys(salesData.historical).map((category) => (
+        <canvas id={`chart-${category}`} key={category}></canvas>
+      ))}
+    </div>
   );
 }
