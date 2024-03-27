@@ -41,18 +41,20 @@ def forecast_sales(frequency, categories, steps=36):
     # Plot for each category
     for category in categories:
         # Initialize a SARIMAX model on the total_sales column of the dataset.
-# The SARIMAX model can account for both seasonal and non-seasonal elements of a time series.
-# order=(1, 1, 1): The non-seasonal order parameters for the model, where:
-#   p=1: The number of lag observations included in the model (AR part).
-#   d=1: The degree of differencing (the number of times the data have had past values subtracted).
-#   q=1: The size of the moving average window (MA part).
-# seasonal_order=(1, 1, 1, 12): The seasonal order parameters, where:
-#   P=1: The number of seasonal autoregressive terms.
-#   D=1: The number of seasonal differences applied to achieve stationarity.
-#   Q=1: The number of seasonal moving average terms.
-#   s=12: The number of periods in each season (12 indicates monthly data with an annual cycle).
-# total_model = SARIMAX(data['total_sales'], order=(1, 1, 1), seasonal_order=(1, 1, 1, 12))
+        # The SARIMAX model can account for both seasonal and non-seasonal elements of a time series.
+        # order=(1, 1, 1): The non-seasonal order parameters for the model, where:
+        #   p=1: The number of lag observations included in the model (AR part).
+        #   d=1: The degree of differencing (the number of times the data have had past values subtracted).
+        #   q=1: The size of the moving average window (MA part).
+        # seasonal_order=(1, 1, 1, 12): The seasonal order parameters, where:
+        #   P=1: The number of seasonal autoregressive terms.
+        #   D=1: The number of seasonal differences applied to achieve stationarity.
+        #   Q=1: The number of seasonal moving average terms.
+        #   s=12: The number of periods in each season (12 indicates monthly data with an annual cycle).
+        # total_model = SARIMAX(data['total_sales'], order=(1, 1, 1), seasonal_order=(1, 1, 1, 12))
 
+
+        # SARIMAX (Seasonal AutoRegressive Integrated Moving Average with eXogenous factors) models
         model = SARIMAX(df[category], order=(1, 1, 1), seasonal_order=(1, 1, 1, s))
         model_fit = model.fit(disp=False)
         forecast = model_fit.get_forecast(steps=steps)
@@ -94,6 +96,6 @@ def forecast_sales(frequency, categories, steps=36):
 
 # Example usage of the function
 
-frequency = 'weekly'
-categories_to_forecast = ['M01AB', 'M01AE', 'N02BA']  # example categories
+frequency = 'monthly'
+categories_to_forecast = ['M01AB']  # example categories
 forecast_sales(frequency, categories_to_forecast, steps=36)
